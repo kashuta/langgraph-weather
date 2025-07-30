@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Точка входа в приложение.
+ * Инициализирует модель, агентов, строит граф и запускает демонстрационные запросы.
+ */
+
 import 'dotenv/config';
 import { ChatOpenAI } from "@langchain/openai";
 import { HumanMessage } from "@langchain/core/messages";
@@ -5,6 +10,9 @@ import { createWeatherAgent } from './agents/weather.js';
 import { createGeographyAgent } from './agents/geography.js';
 import { buildGraph } from './graph/supervisor.js';
 
+/**
+ * Основная асинхронная функция приложения.
+ */
 async function main() {
   console.log("🔵 Инициализация LLM...");
   const llm = new ChatOpenAI({

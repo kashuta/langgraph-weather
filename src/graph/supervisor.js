@@ -1,8 +1,23 @@
+/**
+ * @fileoverview Основной модуль для построения и компиляции графа LangGraph.
+ * Определяет состояние, логику узлов и маршрутизацию для многоагентной системы.
+ */
+
 import { END, Annotation, StateGraph } from "@langchain/langgraph";
 import { HumanMessage } from "@langchain/core/messages";
 import { z } from "zod";
 import { ChatPromptTemplate, MessagesPlaceholder } from "@langchain/core/prompts";
 
+/**
+ * @typedef {Object} AgentState
+ * @property {import("@langchain/core/messages").BaseMessage[]} messages - Список сообщений в диалоге.
+ * @property {string | null} next - Имя следующего агента для вызова.
+ */
+
+/**
+ * Определяет структуру состояния, которая передается между узлами графа.
+ * @type {import("@langchain/langgraph").StateGraphArgs<AgentState>['channels']}
+ */
 export const AgentState = Annotation.Root({
   messages: Annotation({
     reducer: (x, y) => x.concat(y),
@@ -14,6 +29,14 @@ export const AgentState = Annotation.Root({
   }),
 });
 
+/**
+ * Выполняет логику одного узла-агента в графе.
+ * @param {object} params - Параметры для выполнения.
+ * @param {AgentState} params.state - Текущее состояние графа.
+ * @param {import("@langchain/langgraph/prebuilt").ReactAgentExecutor} params.agent - Экземпляр агента для вызова.
+ * @param {string} params.name - Имя агента (для логирования).
+ * @returns {Promise<{messages: import("@langchain/core/messages").HumanMessage[]}>} Обновление для состояния.
+ */
 async function runAgentNode(params) {
   const { state, agent, name } = params;
   console.log(`\n▶️  Вход в ноду '${name}'...`);
@@ -24,6 +47,13 @@ async function runAgentNode(params) {
   };
 }
 
+/**
+ * Строит и компилирует исполняемый граф LangGraph.
+ * @param {import("@langchain/openai").ChatOpenAI} llm - Экземпляр языковой модели для супервизора.
+ * @param {import("@langchain/langgraph/prebuilt").ReactAgentExecutor} weatherAgent - Экземпляр агента погоды.
+ * @param {import("@langchain/langgraph/prebuilt").ReactAgentExecutor} geographyAgent - Экземпляр агента географии.
+ * @returns {Promise<import("@langchain/langgraph").CompiledStateGraph>} Скомпилированный граф.
+ */
 export async function buildGraph(llm, weatherAgent, geographyAgent) {
   const members = ["WeatherAgent", "GeographyAgent"];
   const options = ["FINISH", ...members];

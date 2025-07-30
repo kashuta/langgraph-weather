@@ -1,3 +1,7 @@
+/**
+ * @fileoverview Мокированный инструмент для получения географических координат города.
+ */
+
 import { tool } from "@langchain/core/tools";
 import { z } from "zod";
 import { extractCityFromQuery } from '../utils.js';

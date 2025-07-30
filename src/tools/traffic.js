@@ -1,3 +1,7 @@
+/**
+ * @fileoverview Мокированный инструмент для получения информации о дорожном трафике в городе.
+ */
+
 import { tool } from "@langchain/core/tools";
 import { z } from "zod";
 import { extractCityFromQuery } from '../utils.js';

@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Инструмент для получения информации о погоде.
+ * Использует реальные данные от OpenWeather API, если доступен ключ, или возвращает мокированные данные.
+ */
+
 import 'dotenv/config';
 import { tool } from "@langchain/core/tools";
 import { z } from "zod";
