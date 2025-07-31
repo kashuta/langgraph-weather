@@ -67,7 +67,7 @@ export async function buildGraph(llm, weatherAgent, geographyAgent) {
     ["human", "Проанализируйте диалог. Какой специалист должен ответить следующим, или задача завершена? Выберите из: {options}"],
   ]);
 
-  const supervisorChain = supervisorPrompt.pipe(llm.bindTools([
+  const supervisorLLMChain = supervisorPrompt.pipe(llm.bindTools([
     {
       name: "route",
       description: "Выбрать следующего специалиста или завершить задачу.",
@@ -75,14 +75,41 @@ export async function buildGraph(llm, weatherAgent, geographyAgent) {
         next: z.enum(options),
       }),
     }
-  ], { tool_choice: "route", parallel_tool_calls: false })).pipe(msg => msg.tool_calls[0].args);
+  ], { tool_choice: "route", parallel_tool_calls: false }));
 
   const weatherAgentNode = (state) => runAgentNode({ state, agent: weatherAgent, name: "WeatherAgent" });
   const geographyAgentNode = (state) => runAgentNode({ state, agent: geographyAgent, name: "GeographyAgent" });
   
   const supervisorNode = async (state) => {
       console.log("\n▶️  Вход в ноду 'supervisor'...");
-      const result = await supervisorChain.invoke({ ...state, members: members.join(", "), options: options.join(", ") });
+      console.log("  [Supervisor] 🔎 Анализ сообщений для принятия решения:");
+      state.messages.forEach((msg, i) => {
+        console.log(`    [Сообщение ${i}]`);
+        console.log(`      - Тип: ${msg._getType()}`);
+        console.log(`      - Контент: "${msg.content}"`);
+        if (msg.name) {
+            console.log(`      - Источник: ${msg.name}`);
+        }
+      });
+
+      const chainInput = { ...state, members: members.join(", "), options: options.join(", ") };
+      const formattedPrompt = await supervisorPrompt.formatMessages(chainInput);
+      
+      console.log("  [Supervisor] ➡️  Отправка запроса в LLM с промптом:");
+      formattedPrompt.forEach((msg, i) => {
+          console.log(`    [Промпт ${i} ${msg._getType()}]: ${msg.content}`);
+      });
+
+      const llmResponse = await supervisorLLMChain.invoke(chainInput);
+      
+      console.log("  [Supervisor] ⬅️  Получен ответ от LLM:");
+      console.log(`      - Контент: ${llmResponse.content}`);
+      if (llmResponse.tool_calls && llmResponse.tool_calls.length > 0) {
+          console.log(`      - Вызов инструмента: ${llmResponse.tool_calls[0].name}`);
+          console.log(`      - Аргументы: ${JSON.stringify(llmResponse.tool_calls[0].args)}`);
+      }
+
+      const result = llmResponse.tool_calls[0].args;
       console.log(`  [Supervisor] 🧠 Решение: направить на '${result.next}'`);
       console.log("◀️  Выход из ноды 'supervisor'.");
       return { next: result.next };

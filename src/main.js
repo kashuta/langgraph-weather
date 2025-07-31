@@ -10,6 +10,8 @@ import { createWeatherAgent } from './agents/weather.js';
 import { createGeographyAgent } from './agents/geography.js';
 import { buildGraph } from './graph/supervisor.js';
 
+import { startConversation } from './console.js';
+
 /**
  * Основная асинхронная функция приложения.
  */
@@ -28,14 +30,7 @@ async function main() {
   console.log("🔵 Построение графа с супервизором...");
   const graph = await buildGraph(llm, weatherAgent, geographyAgent);
 
-  const testQueries = [
-    "какая погода в Париже?",
-    "какие координаты у Лондона?",
-    "сколько людей живет в Токио?",
-    "какая погода и население в Москве?",
-  ];
-
-  for (const query of testQueries) {
+  await startConversation(async (query) => {
     console.log(`\n\n💬 Запрос пользователя: "${query}"`);
     console.log("--------------------------------------------------");
     
@@ -45,7 +40,7 @@ async function main() {
     );
     
     console.log("\n✅ Финальный ответ:", finalState.messages.slice(-1)[0].content);
-  }
+  });
 }
 
 main().catch(console.error); 
