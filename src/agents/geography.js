@@ -5,9 +5,9 @@
 
 import { createReactAgent } from "@langchain/langgraph/prebuilt";
 import { SystemMessage } from "@langchain/core/messages";
-import { coordinatesTool } from '../tools/coordinates.js';
-import { populationTool } from '../tools/population.js';
-import { trafficTool } from '../tools/traffic.js';
+import { coordinatesToolWithRetry } from '../tools/coordinates-with-retry.js';
+import { populationToolWithRetry } from '../tools/population-with-retry.js';
+import { trafficToolWithRetry } from '../tools/traffic-with-retry.js';
 
 /**
  * Создает и конфигурирует агента, специализирующегося на географии.
@@ -15,7 +15,7 @@ import { trafficTool } from '../tools/traffic.js';
  * @returns {import("@langchain/langgraph/prebuilt").ReactAgentExecutor} Скомпилированный агент.
  */
 export const createGeographyAgent = (llm) => {
-  const tools = [coordinatesTool, populationTool, trafficTool];
+  const tools = [coordinatesToolWithRetry, populationToolWithRetry, trafficToolWithRetry];
   console.log("  [Agent Factory] 🛠️  Создание GeographyAgent с инструментами: get_coordinates, get_population, get_traffic_info");
   return createReactAgent({
     llm,

@@ -136,5 +136,5 @@ export async function buildGraph(llm, weatherAgent, geographyAgent) {
   
   workflow.setEntryPoint("supervisor");
 
-  return workflow.compile();
+  return workflow;
 } 

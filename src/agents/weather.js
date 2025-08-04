@@ -5,7 +5,7 @@
 
 import { createReactAgent } from "@langchain/langgraph/prebuilt";
 import { SystemMessage } from "@langchain/core/messages";
-import { weatherTool } from '../tools/weather.js';
+import { weatherToolWithRetry } from '../tools/weather-with-retry.js';
 
 /**
  * Создает и конфигурирует агента, специализирующегося на погоде.
@@ -16,7 +16,7 @@ export const createWeatherAgent = (llm) => {
   console.log("  [Agent Factory] 🛠️  Создание WeatherAgent с инструментом: get_weather");
   return createReactAgent({
     llm,
-    tools: [weatherTool],
+    tools: [weatherToolWithRetry],
     stateModifier: new SystemMessage("Ты специалист по погоде. Используй инструмент get_weather для ответа на вопросы о погоде."),
   });
 }; 
